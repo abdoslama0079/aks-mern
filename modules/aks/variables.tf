@@ -1,22 +1,17 @@
-variable "location" {
+variable "location" {}
 
-}
- variable "resource_group_name" {}
+variable "rg" {
+description = "The name of the resource group"
+  type        = string
+} # This MUST exist here
 
-variable "service_principal_name" {
-  type = string
-}
-
-variable "ssh_public_key" {
-  default = "~/.ssh/id_rsa.pub"
-}
-
-variable "client_id" {}
-variable "client_secret" {
-  type = string
-  sensitive = true
+variable "var_client_id" {
+description = "client id"
+  type        = string
 }
 
-variable "azurerm_container_registry" {
-  type = string
-}
+variable "client_secret" {}
+
+variable "azurerm_container_registry" {}
+
+variable "service_principal_name" {}

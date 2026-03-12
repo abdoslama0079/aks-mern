@@ -67,10 +67,10 @@ resource "azurerm_role_assignment" "acr_spa_link" {
 module "aks" {
   source                     = "./modules/aks/"
   service_principal_name     = var.service_principal_name
-  client_id                  = module.ServicePrincipal.client_id
+  var_client_id                  = module.ServicePrincipal.client_id
   client_secret              = module.ServicePrincipal.client_secret
   location                   = var.location
-  resource_group_name        = var.rgname
+  rg        = var.rgname
   azurerm_container_registry = azurerm_container_registry.acrrgist.id
   depends_on = [
     module.ServicePrincipal

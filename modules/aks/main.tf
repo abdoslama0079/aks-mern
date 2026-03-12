@@ -7,15 +7,20 @@ data "azurerm_kubernetes_service_versions" "current" {
   location = var.location
   include_preview = false  
 }
- 
+
+# 1. Generate a new private/public key pair
+resource "tls_private_key" "aks_key" {
+  algorithm = "RSA"
+  rsa_bits  = 4096
+}
 
 resource "azurerm_kubernetes_cluster" "aks-cluster" {
   name                  = "techtutorialwithpiyush-aks-cluster"
   location              = var.location
-  resource_group_name   = var.resource_group_name
-  dns_prefix            = "${var.resource_group_name}-cluster"           
+  resource_group_name   = var.rg
+  dns_prefix            = "${var.rg}-cluster"           
   kubernetes_version    =  data.azurerm_kubernetes_service_versions.current.latest_version
-  node_resource_group = "${var.resource_group_name}-nrg"
+  node_resource_group = "${var.rg}-nrg"
   
   default_node_pool {
     name       = "defaultpool"
@@ -39,7 +44,7 @@ resource "azurerm_kubernetes_cluster" "aks-cluster" {
   }
 
   service_principal  {
-    client_id = var.client_id
+    client_id = var.var_client_id
     client_secret = var.client_secret
   }
 
@@ -49,7 +54,7 @@ resource "azurerm_kubernetes_cluster" "aks-cluster" {
   linux_profile {
     admin_username = "ubuntu"
     ssh_key {
-        key_data = trimspace(file(var.ssh_public_key))
+        key_data = tls_private_key.aks_key.public_key_openssh
     }
   }
 
@@ -67,4 +72,5 @@ resource "azurerm_role_assignment" "example" {
   role_definition_name             = "AcrPull"
   scope                            = var.azurerm_container_registry
   skip_service_principal_aad_check = true
+  depends_on = [azurerm_kubernetes_cluster.aks-cluster]
 }
