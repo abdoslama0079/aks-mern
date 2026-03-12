@@ -1,76 +1,87 @@
-# Datasource to get Latest Azure AKS latest Version
-# Check if there is a var with the version name , if not , use the 
-# latest version, if there is a var, use that version
-# make sure the version specified in var is valid
-
-data "azurerm_kubernetes_service_versions" "current" {
+data "azurerm_subscription" "current" {}
+resource "azurerm_resource_group" "rg1" {
+  name     = var.rgname
   location = var.location
-  include_preview = false  
 }
 
-# 1. Generate a new private/public key pair
-resource "tls_private_key" "aks_key" {
-  algorithm = "RSA"
-  rsa_bits  = 4096
+module "ServicePrincipal" {
+  source                 = "./modules/ServicePrincipal"
+  service_principal_name = var.service_principal_name
+
+  depends_on = [
+    azurerm_resource_group.rg1
+  ]
 }
 
-resource "azurerm_kubernetes_cluster" "aks-cluster" {
-  name                  = "techtutorialwithpiyush-aks-cluster"
-  location              = var.location
-  rg   = var.rgname
-  dns_prefix            = "${var.rgname}-cluster"           
-  kubernetes_version    =  data.azurerm_kubernetes_service_versions.current.latest_version
-  node_resource_group = "${var.rgname}-nrg"
-  
-  default_node_pool {
-    name       = "defaultpool"
-    vm_size    = "Standard_DS2_v2"
-    zones   = [1, 2, 3]
-    auto_scaling_enabled = true
-    max_count            = 3
-    min_count            = 1
-    os_disk_size_gb      = 30
-    type                 = "VirtualMachineScaleSets"
-    node_labels = {
-      "nodepool-type"    = "system"
-      "environment"      = "prod"
-      "nodepoolos"       = "linux"
-     } 
-   tags = {
-      "nodepool-type"    = "system"
-      "environment"      = "prod"
-      "nodepoolos"       = "linux"
-   } 
-  }
+resource "azurerm_role_assignment" "rolespn" {
 
-  service_principal  {
-    client_id = var.var_client_id
-    client_secret = var.client_secret
-  }
+  scope                = "/subscriptions/${data.azurerm_subscription.current.id}"
+  role_definition_name = "Contributor"
+  principal_id         = module.ServicePrincipal.service_principal_object_id
 
-# to do: generate the ssh keys using tls_private_key
-# upload the key to key vault
-
-  linux_profile {
-    admin_username = "ubuntu"
-    ssh_key {
-        key_data = tls_private_key.aks_key.public_key_openssh
-    }
-  }
-
-  network_profile {
-      network_plugin = "azure"
-      load_balancer_sku = "standard"
-  }
-
-
-  }
-
-
-resource "azurerm_role_assignment" "example" {
-  principal_id                     = azurerm_kubernetes_cluster.aks-cluster.kubelet_identity[0].object_id
-  role_definition_name             = "AcrPull"
-  scope                            = var.azurerm_container_registry
-  skip_service_principal_aad_check = true
-  depends_on = [azurerm_kubernetes_cluster.aks-cluster]
+  depends_on = [
+    module.ServicePrincipal
+  ]
 }
+
+module "keyvault" {
+  source                      = "./modules/Keyvault"
+  keyvault_name               = var.keyvault_name
+  location                    = var.location
+  resource_group_name         = var.rgname
+  service_principal_name      = var.service_principal_name
+  service_principal_object_id = module.ServicePrincipal.service_principal_object_id
+  service_principal_tenant_id = module.ServicePrincipal.service_principal_tenant_id
+
+  depends_on = [
+    module.ServicePrincipal
+  ]
+}
+
+resource "azurerm_key_vault_secret" "example" {
+  name         = module.ServicePrincipal.client_id
+  value        = module.ServicePrincipal.client_secret
+  key_vault_id = module.keyvault.keyvault_id
+
+  depends_on = [
+    module.keyvault
+  ]
+}
+
+resource "azurerm_container_registry" "acrrgist" {
+  name                = "contrainerRegistry242421"
+  resource_group_name = azurerm_resource_group.rg1.name
+  location            = azurerm_resource_group.rg1.location
+  sku                 = "Basic"
+
+}
+resource "azurerm_role_assignment" "acr_spa_link" {
+  scope                = azurerm_container_registry.acrrgist.id
+  role_definition_name = "AcrPush" # Or "AcrPull" depending on what it needs to do
+  principal_id         = module.ServicePrincipal.service_principal_object_id # Note: Use principal_id, NOT client_id
+}
+
+
+
+#create Azure Kubernetes Service
+module "aks" {
+  source                     = "./modules/aks/"
+  service_principal_name     = var.service_principal_name
+  client_id                  = module.ServicePrincipal.client_id
+  client_secret              = module.ServicePrincipal.client_secret
+  location                   = var.location
+  resource_group_name        = var.rgname
+  azurerm_container_registry = azurerm_container_registry.acrrgist.id
+  depends_on = [
+    module.ServicePrincipal
+  ]
+
+}
+
+resource "local_file" "kubeconfig" {
+  depends_on = [module.aks]
+  filename   = "./kubeconfig"
+  content    = module.aks.config
+
+}
+
