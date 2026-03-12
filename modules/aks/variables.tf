@@ -1,6 +1,9 @@
 variable "location" {}
 
-variable "resource_group_name" {} # This MUST exist here
+variable "resource_group_name" {
+description = "The name of the resource group"
+  type        = string
+} # This MUST exist here
 
 variable "client_id" {}
 
