@@ -15,7 +15,7 @@ module "ServicePrincipal" {
 
 resource "azurerm_role_assignment" "rolespn" {
 
-  scope                = "/subscriptions/${data.azurerm_subscription.current.id}"
+  scope                = data.azurerm_subscription.current.id
   role_definition_name = "Contributor"
   principal_id         = module.ServicePrincipal.service_principal_object_id
 
