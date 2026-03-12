@@ -17,10 +17,10 @@ resource "tls_private_key" "aks_key" {
 resource "azurerm_kubernetes_cluster" "aks-cluster" {
   name                  = "techtutorialwithpiyush-aks-cluster"
   location              = var.location
-  rg   = var.resource_group_name
-  dns_prefix            = "${var.resource_group_name}-cluster"           
+  rg   = var.rgname
+  dns_prefix            = "${var.rgname}-cluster"           
   kubernetes_version    =  data.azurerm_kubernetes_service_versions.current.latest_version
-  node_resource_group = "${var.resource_group_name}-nrg"
+  node_resource_group = "${var.rgname}-nrg"
   
   default_node_pool {
     name       = "defaultpool"
