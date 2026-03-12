@@ -1,0 +1,22 @@
+variable "rgname" {
+  type        = string
+  description = "resource group name"
+  default = "aksmern"
+}
+
+variable "location" {
+  type    = string
+  default = "australiaeast"
+}
+
+variable "service_principal_name" {
+  type = string
+}
+
+variable "keyvault_name" {
+  type = string
+}
+
+variable "SUB_ID" {
+  type = string
+}
