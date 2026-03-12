@@ -11,12 +11,15 @@ variable "location" {
 
 variable "service_principal_name" {
   type = string
+  default = "jenkinsservice"
 }
 
 variable "keyvault_name" {
   type = string
+  default = "meranapp002833"
 }
 
 variable "SUB_ID" {
   type = string
+  default = data.azurerm_subscription.current.id
 }

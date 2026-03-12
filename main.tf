@@ -1,3 +1,4 @@
+data "azurerm_subscription" "current" {}
 resource "azurerm_resource_group" "rg1" {
   name     = var.rgname
   location = var.location
@@ -14,7 +15,7 @@ module "ServicePrincipal" {
 
 resource "azurerm_role_assignment" "rolespn" {
 
-  scope                = "/subscriptions/${var.SUB_ID}"
+  scope                = "/subscriptions/${data.azurerm_subscription.current.id}"
   role_definition_name = "Contributor"
   principal_id         = module.ServicePrincipal.service_principal_object_id
 
@@ -24,7 +25,7 @@ resource "azurerm_role_assignment" "rolespn" {
 }
 
 module "keyvault" {
-  source                      = "./modules/keyvault"
+  source                      = "./modules/Keyvault"
   keyvault_name               = var.keyvault_name
   location                    = var.location
   resource_group_name         = var.rgname
