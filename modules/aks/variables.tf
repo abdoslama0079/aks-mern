@@ -1,6 +1,6 @@
 variable "location" {}
 
-variable "resource_group_name" {
+variable "rg" {
 description = "The name of the resource group"
   type        = string
   default = "abdo"
