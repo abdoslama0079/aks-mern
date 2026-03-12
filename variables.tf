@@ -19,7 +19,4 @@ variable "keyvault_name" {
   default = "meranapp002833"
 }
 
-variable "SUB_ID" {
-  type = string
-  default = data.azurerm_subscription.current.id
-}
+
