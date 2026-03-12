@@ -24,6 +24,16 @@ resource "azurerm_role_assignment" "rolespn" {
   ]
 }
 
+# 2. The Wait Timer
+resource "time_sleep" "wait_60_seconds" {
+  depends_on = [azurerm_role_assignment.rolespn]
+
+  create_duration = "60s"
+}
+
+
+
+
 module "keyvault" {
   source                      = "./modules/Keyvault"
   keyvault_name               = var.keyvault_name
@@ -44,7 +54,8 @@ resource "azurerm_key_vault_secret" "example" {
   key_vault_id = module.keyvault.keyvault_id
 
   depends_on = [
-    module.keyvault
+    module.keyvault,
+    time_sleep.wait_60_seconds
   ]
 }
 
@@ -57,7 +68,7 @@ resource "azurerm_container_registry" "acrrgist" {
 }
 resource "azurerm_role_assignment" "acr_spa_link" {
   scope                = azurerm_container_registry.acrrgist.id
-  role_definition_name = "AcrPush" # Or "AcrPull" depending on what it needs to do
+  role_definition_name = "AcrPush"                                           # Or "AcrPull" depending on what it needs to do
   principal_id         = module.ServicePrincipal.service_principal_object_id # Note: Use principal_id, NOT client_id
 }
 
@@ -67,10 +78,10 @@ resource "azurerm_role_assignment" "acr_spa_link" {
 module "aks" {
   source                     = "./modules/aks/"
   service_principal_name     = var.service_principal_name
-  var_client_id                  = module.ServicePrincipal.client_id
+  var_client_id              = module.ServicePrincipal.client_id
   client_secret              = module.ServicePrincipal.client_secret
   location                   = var.location
-  rg        = var.rgname
+  rg                         = var.rgname
   azurerm_container_registry = azurerm_container_registry.acrrgist.id
   depends_on = [
     module.ServicePrincipal
