@@ -3,8 +3,6 @@ variable "location" {}
 variable "rg" {
 description = "The name of the resource group"
   type        = string
-  default = "abdo"
-
 } # This MUST exist here
 
 variable "client_id" {}
