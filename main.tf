@@ -67,7 +67,7 @@ resource "azurerm_role_assignment" "acr_spa_link" {
 module "aks" {
   source                     = "./modules/aks/"
   service_principal_name     = var.service_principal_name
-  client_id                  = module.ServicePrincipal.client_id
+  var_client_id                  = module.ServicePrincipal.client_id
   client_secret              = module.ServicePrincipal.client_secret
   location                   = var.location
   rg        = var.rgname
