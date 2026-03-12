@@ -4,6 +4,7 @@ terraform {
       source  = "hashicorp/azurerm"
       version = "~> 4.8.0"
     }
+    time = { source = "hashicorp/time" }
   }
 
   # THIS IS YOUR NEW BACKEND BLOCK
@@ -12,12 +13,14 @@ terraform {
     storage_account_name = "abdotfstatef4ff53c8"
     container_name       = "tfstate"
     key                  = "mern-project.terraform.tfstate"
-    
+
     # Optional: Use Azure AD for the state file access (more secure)
-    use_azuread_auth     = true
+    use_azuread_auth = true
   }
 }
 
 provider "azurerm" {
-  features {}
+  features {
+
+  }
 }

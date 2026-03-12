@@ -31,7 +31,25 @@ resource "time_sleep" "wait_60_seconds" {
   create_duration = "60s"
 }
 
+resource "azurerm_key_vault_secret" "example" {
+  name         = module.ServicePrincipal.client_id
+  value        = module.ServicePrincipal.client_secret
+  key_vault_id = module.keyvault.keyvault_id
 
+  depends_on = [
+    module.keyvault,
+    time_sleep.wait_60_seconds
+  ]
+}
+# 4. Upload SSH Key to Key Vault
+resource "azurerm_key_vault_secret" "ssh_key" {
+  name         = "aks-ssh-key"
+  # Pulls the private key generated inside the module or root
+  value        = module.aks.private_key_pem
+  key_vault_id = "/subscriptions/${data.azurerm_subscription.current.subscription_id}/resourceGroups/${var.rgname}/providers/Microsoft.KeyVault/vaults/${var.keyvault_name}"
+
+  depends_on = [time_sleep.wait_60_seconds]
+}
 
 
 module "keyvault" {
@@ -48,16 +66,7 @@ module "keyvault" {
   ]
 }
 
-resource "azurerm_key_vault_secret" "example" {
-  name         = module.ServicePrincipal.client_id
-  value        = module.ServicePrincipal.client_secret
-  key_vault_id = module.keyvault.keyvault_id
 
-  depends_on = [
-    module.keyvault,
-    time_sleep.wait_60_seconds
-  ]
-}
 
 resource "azurerm_container_registry" "acrrgist" {
   name                = "contrainerRegistry242421"
