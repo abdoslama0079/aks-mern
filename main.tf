@@ -70,7 +70,7 @@ module "aks" {
   client_id                  = module.ServicePrincipal.client_id
   client_secret              = module.ServicePrincipal.client_secret
   location                   = var.location
-  resource_group_name        = var.rgname
+  rg        = var.rgname
   azurerm_container_registry = azurerm_container_registry.acrrgist.id
   depends_on = [
     module.ServicePrincipal
