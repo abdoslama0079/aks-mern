@@ -28,7 +28,7 @@ resource "azurerm_role_assignment" "rolespn" {
 resource "time_sleep" "wait_60_seconds" {
   depends_on = [azurerm_role_assignment.rolespn]
 
-  create_duration = "60s"
+  create_duration = "90s"
 }
 
 resource "azurerm_key_vault_secret" "example" {
