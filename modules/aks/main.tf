@@ -26,11 +26,9 @@ identity {
     type = "SystemAssigned"
   }
   acr_profile {
-    acr_id = azurerm_container_registry.acr.id
+    acr_id = var.acr_cont
   }
-  acr_profile {
-    acr_id = azurerm_container_registry.acr.id
-  }
+
   default_node_pool {
     name       = "defaultpool"
     vm_size    = "Standard_D2s_v3"
