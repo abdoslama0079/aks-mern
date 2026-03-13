@@ -47,12 +47,7 @@ identity {
    } 
   }
 
-  service_principal  {
-    client_id = var.var_client_id
-    client_secret = var.client_secret
-  }
 
-# to do: generate the ssh keys using tls_private_key
 # upload the key to key vault
 
   linux_profile {
