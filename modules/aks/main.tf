@@ -68,9 +68,10 @@ resource "azurerm_kubernetes_cluster" "aks-cluster" {
 
 
 resource "azurerm_role_assignment" "example" {
-  principal_id                     = azurerm_kubernetes_cluster.aks-cluster.identity[0].principal_id
+  principal_id                     = azurerm_kubernetes_cluster.aks-cluster.identity[0].prins
   role_definition_name             = "AcrPull"
   scope                            = var.azurerm_container_registry
   skip_service_principal_aad_check = true
   depends_on = [azurerm_kubernetes_cluster.aks-cluster]
 }
+
