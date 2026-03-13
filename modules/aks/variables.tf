@@ -15,3 +15,6 @@ variable "client_secret" {}
 variable "azurerm_container_registry" {}
 
 variable "service_principal_name" {}
+variable "acr_cont" {
+  type = string
+}
