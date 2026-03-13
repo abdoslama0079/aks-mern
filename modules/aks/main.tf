@@ -25,7 +25,12 @@ resource "azurerm_kubernetes_cluster" "aks-cluster" {
 identity {
     type = "SystemAssigned"
   }
-
+  acr_profile {
+    acr_id = azurerm_container_registry.acr.id
+  }
+  acr_profile {
+    acr_id = azurerm_container_registry.acr.id
+  }
   default_node_pool {
     name       = "defaultpool"
     vm_size    = "Standard_D2s_v3"
@@ -64,14 +69,5 @@ identity {
 
 
   }
-resource "azurerm_role_assignment" "example" {
-  # You cannot use the cluster resource itself; you must use the principal_id
-  principal_id                     = azurerm_kubernetes_cluster.aks-cluster.kubelet_identity[0].object_id
-  role_definition_name             = "AcrPull"
-  scope                            = var.azurerm_container_registry
-  skip_service_principal_aad_check = true
-  
-  depends_on = [azurerm_kubernetes_cluster.aks-cluster]
-}
 
 
