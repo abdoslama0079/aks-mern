@@ -92,8 +92,10 @@ module "aks" {
   location                   = var.location
   rg                         = var.rgname
   azurerm_container_registry = azurerm_container_registry.acrrgist.id
+  acr_cont = azurerm_container_registry.acrrgist.id
   depends_on = [
-    module.ServicePrincipal
+    module.ServicePrincipal,
+    azurerm_container_registry.acrrgist
   ]
 
 }
